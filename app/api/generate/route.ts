@@ -129,12 +129,16 @@ Struktur JSON yang harus dikembalikan:
       try {
         console.log(`[AI Cascade] Mencoba model: ${modelName}`);
 
+        // Hitung token secara dinamis: alokasikan ~350 token per soal, minimal batas bawah 2000 token, maksimal 4096 token (batas aman free tier)
+        const dynamicMaxTokens = Math.min(4096, Math.max(2000, count * 350));
+
         const completion = await openai.chat.completions.create(
           {
             model: modelName,
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             response_format: { type: "json_object" },
+            max_tokens: dynamicMaxTokens, // Perbaikan: Batas token diperluas secara aman agar tidak terpotong
           },
           {
             signal: controller.signal,
