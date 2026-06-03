@@ -23,11 +23,10 @@ interface Question {
 // Model free tier OpenRouter yang aktif per Juni 2026
 // Referensi: https://openrouter.ai/collections/free-models
 const CASCADE_MODELS = [
-  "openrouter/auto", // Auto-route ke model free terbaik yang tersedia
-  "meta-llama/llama-4-scout:free", // Cepat, 128K context, bagus untuk structured output
-  "meta-llama/llama-4-maverick:free", // Lebih powerful dari Scout
-  "deepseek/deepseek-r1-0528:free", // Reasoning kuat, cocok untuk soal Bloom HOTS
-  "meta-llama/llama-3.3-70b-instruct:free", // Fallback stabil
+  "openrouter/owl-alpha",
+  "z-ai/glm-4.5-air:free",
+  "openai/gpt-oss-120b:free",
+  "openrouter/auto", // Fallback stabil
 ];
 
 // Peta nama tingkat Bloom dari kode ke label lengkap Indonesia
