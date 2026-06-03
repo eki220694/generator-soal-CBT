@@ -82,7 +82,7 @@ export default function GeneratePage() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 2rem 1rem;
+          padding: 1rem;
           position: relative;
           overflow: hidden;
         }
@@ -187,6 +187,7 @@ export default function GeneratePage() {
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
         .subheading {
           font-size: 13px;
@@ -224,12 +225,13 @@ export default function GeneratePage() {
           border: 1px solid rgba(255,255,255,0.09);
           border-radius: 12px;
           padding: 11px 14px;
-          font-size: 14px;
+          font-size: 16px; /* Mencegah auto-zoom paksa pada iOS Safari */
           font-family: 'DM Sans', sans-serif;
           color: var(--text);
           outline: none;
           transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
           -webkit-appearance: none;
+          appearance: none;
         }
         input[type="text"]::placeholder { color: rgba(255,255,255,0.2); }
         input[type="text"]:focus,
@@ -265,7 +267,7 @@ export default function GeneratePage() {
         /* Bloom pills row */
         .bloom-grid {
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
+          grid-template-columns: repeat(3, 1fr); /* Default 3 kolom di mobile agar teks tidak terpotong */
           gap: 6px;
           margin-bottom: 1.25rem;
         }
@@ -320,6 +322,8 @@ export default function GeneratePage() {
           position: relative;
           overflow: hidden;
           margin-top: 0.25rem;
+          -webkit-appearance: none;
+          appearance: none;
         }
         .btn-primary {
           background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%);
@@ -424,6 +428,42 @@ export default function GeneratePage() {
           font-size: 10px;
           color: rgba(255,255,255,0.28);
           margin-top: 1px;
+        }
+
+        /* MEDIA QUERIES RESPONSIVITAS MOBILE */
+        @media (max-width: 480px) {
+          .page-root {
+            padding: 1rem 0.75rem;
+          }
+          .card {
+            padding: 1.5rem 1.15rem 1.25rem;
+            border-radius: 20px;
+          }
+          .heading {
+            font-size: 1.45rem;
+          }
+          .subheading {
+            font-size: 12px;
+            margin-bottom: 1.25rem;
+          }
+          .stat-row {
+            margin-bottom: 1.25rem;
+          }
+          .stat-chip {
+            padding: 6px 4px;
+          }
+          .stat-chip .stat-val {
+            font-size: 13px;
+          }
+          .stat-chip .stat-desc {
+            font-size: 9px;
+          }
+        }
+
+        @media (min-width: 440px) {
+          .bloom-grid {
+            grid-template-columns: repeat(6, 1fr); /* Kembalikan ke 6 kolom hanya jika layar cukup lebar */
+          }
         }
       `}</style>
 
