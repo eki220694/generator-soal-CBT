@@ -262,7 +262,7 @@ function stringSimilarity(a: string, b: string): number {
 }
 
 /** Split total count into small chunks so free-tier models finish without truncation. */
-function splitCount(total: number, chunkSize = 4): number[] {
+function splitCount(total: number, chunkSize = 10): number[] {
   const chunks: number[] = [];
   let remaining = total;
   while (remaining > 0) {
@@ -410,7 +410,7 @@ export async function POST(request: NextRequest) {
     let successModel = "";
 
     // 3. Pilih mode: single untuk ≤4, split-chunk untuk >4
-    if (count <= 4) {
+    if (count <= 15) {
       // --- MODE SINGLE CASCADE ---
       console.log(`[Generate] Mode single — ${count} soal`);
       questions = await singleCascade(openai, topic, count, gradeLevel, bloomLabel);
