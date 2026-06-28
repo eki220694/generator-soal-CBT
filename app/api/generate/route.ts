@@ -38,13 +38,13 @@ const BOCOR_THRESHOLD = 0.75;
 const DISTRACTOR_SIMILARITY_THRESHOLD = 0.9;
 const LENGTH_RATIO_MIN = 0.3;
 
-// Model free tier OpenRouter yang aktif per Juni 2026
+// Model free tier OpenRouter yang punya output cukup besar
 // Referensi: https://openrouter.ai/collections/free-models
 const CASCADE_MODELS = [
-  "openrouter/owl-alpha",
-  "z-ai/glm-4.5-air:free",
-  "openai/gpt-oss-120b:free",
-  "openrouter/auto", // Fallback stabil
+  "google/gemini-2.5-flash-exp:free",  // Gemini flash — output besar, cepat
+  "google/gemini-2.0-flash:free",      // Gemini 2.0 flash — stabil
+  "openrouter/auto",                   // Fallback — router ke model terbaik
+  "openrouter/owl-alpha",              // Paling akhir — darurat
 ];
 
 // Peta nama tingkat Bloom dari kode ke label lengkap Indonesia
