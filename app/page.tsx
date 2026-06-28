@@ -582,7 +582,7 @@ export default function GeneratePage() {
                   max="100"
                   required
                   disabled={loading}
-                  value={count}
+                  value={count || ""}
                   onChange={(e) =>
                     setCount(e.target.value === "" ? 0 : parseInt(e.target.value) || 0)
                   }
