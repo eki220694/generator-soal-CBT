@@ -38,13 +38,13 @@ const BOCOR_THRESHOLD = 0.75;
 const DISTRACTOR_SIMILARITY_THRESHOLD = 0.9;
 const LENGTH_RATIO_MIN = 0.3;
 
-// Model OpenRouter untuk paid API key — capable, output besar, support json_object
-// Urutan: termurah/tercepat dulu, fallback ke model terkuat
+// Model free tier OpenRouter — pilih yang punya output besar (≥4K) dan bagus untuk text generation
+// Referensi: https://openrouter.ai/collections/free-models
 const CASCADE_MODELS = [
-  "google/gemini-2.5-flash-001",       // Cepat, murah, output besar
-  "mistralai/mistral-small-3.1-24b",   // Kapasitas besar, stabil
-  "openai/gpt-4o-mini",                // Mini, cocok untuk generate soal
-  "openrouter/auto",                   // Fallback
+  "google/gemma-4-31b-it:free",       // Output besar, bagus untuk text, support function calling
+  "openai/gpt-oss-120b:free",          // General purpose, output besar
+  "nvidia/nemotron-3-ultra-550b-a55b:free", // Reasoning, multi-step
+  "openrouter/auto",                   // Fallback — router ke model gratis terbaik
 ];
 
 // Peta nama tingkat Bloom dari kode ke label lengkap Indonesia
@@ -261,8 +261,8 @@ function stringSimilarity(a: string, b: string): number {
   return (2 * intersectionSize) / (s1.length - 1 + s2.length - 1);
 }
 
-/** Split total count into chunks of max chunkSize (default 20). */
-function splitCount(total: number, chunkSize = 20): number[] {
+/** Split total count into small chunks so free-tier models finish without truncation. */
+function splitCount(total: number, chunkSize = 4): number[] {
   const chunks: number[] = [];
   let remaining = total;
   while (remaining > 0) {
@@ -299,15 +299,14 @@ async function callModelOnce(
   }
 
   // ponytail: keep under 1600 so free-tier models (cap ~2048) finish with "stop" not "length"
-  const maxTokens = Math.min(10000, Math.max(2000, chunkCount * 500));
-  const budget = maxTokens + Math.min(Math.ceil(maxTokens * 0.2), 3000);
+  const maxTokens = Math.min(6000, Math.max(2000, chunkCount * 800));
+  const budget = maxTokens + Math.min(Math.ceil(maxTokens * 0.3), 2000);
 
   const completion = await openai.chat.completions.create(
     {
       model: modelName,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      response_format: { type: "json_object" },
       max_tokens: budget,
     },
     { signal },
@@ -410,8 +409,8 @@ export async function POST(request: NextRequest) {
     let questions: Question[] = [];
     let successModel = "";
 
-    // 3. Pilih mode: single untuk ≤50, split-chunk untuk >50
-    if (count <= 50) {
+    // 3. Pilih mode: single untuk ≤4, split-chunk untuk >4
+    if (count <= 4) {
       // --- MODE SINGLE CASCADE ---
       console.log(`[Generate] Mode single — ${count} soal`);
       questions = await singleCascade(openai, topic, count, gradeLevel, bloomLabel);
@@ -623,7 +622,6 @@ async function chunkCascade(
           model: modelName,
           messages: [{ role: "user", content: fullPrompt }],
           temperature: 0.7,
-          response_format: { type: "json_object" },
           max_tokens: budget,
         },
         { signal: controller.signal },
