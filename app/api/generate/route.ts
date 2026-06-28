@@ -100,7 +100,7 @@ ATURAN WAJIB:
 - Buat tepat ${count} soal. HARUS tepat ${count}, jangan kurang.
 
 FORMAT OUTPUT:
-Kembalikan hanya objek JSON yang valid. Dilarang menggunakan markdown, backtick, atau teks lain di luar JSON.
+Kembalikan hanya objek JSON yang valid. Boleh menggunakan markdown triple-backtick json untuk membungkus JSON.
 
 Struktur JSON yang harus dikembalikan:
 {
@@ -307,7 +307,6 @@ async function callModelOnce(
       model: modelName,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
-      response_format: { type: "json_object" },
       max_tokens: budget,
     },
     { signal },
@@ -624,7 +623,6 @@ async function chunkCascade(
           model: modelName,
           messages: [{ role: "user", content: fullPrompt }],
           temperature: 0.7,
-          response_format: { type: "json_object" },
           max_tokens: budget,
         },
         { signal: controller.signal },
