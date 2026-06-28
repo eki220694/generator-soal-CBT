@@ -38,13 +38,13 @@ const BOCOR_THRESHOLD = 0.75;
 const DISTRACTOR_SIMILARITY_THRESHOLD = 0.9;
 const LENGTH_RATIO_MIN = 0.3;
 
-// Model free tier OpenRouter yang punya output cukup besar
-// Referensi: https://openrouter.ai/collections/free-models
+// Model OpenRouter untuk paid API key — capable, output besar, support json_object
+// Urutan: termurah/tercepat dulu, fallback ke model terkuat
 const CASCADE_MODELS = [
-  "google/gemini-2.5-flash-exp:free",  // Gemini flash — output besar, cepat
-  "google/gemini-2.0-flash:free",      // Gemini 2.0 flash — stabil
-  "openrouter/auto",                   // Fallback — router ke model terbaik
-  "openrouter/owl-alpha",              // Paling akhir — darurat
+  "google/gemini-2.5-flash-001",       // Cepat, murah, output besar
+  "mistralai/mistral-small-3.1-24b",   // Kapasitas besar, stabil
+  "openai/gpt-4o-mini",                // Mini, cocok untuk generate soal
+  "openrouter/auto",                   // Fallback
 ];
 
 // Peta nama tingkat Bloom dari kode ke label lengkap Indonesia
@@ -101,7 +101,7 @@ ATURAN WAJIB:
 - Buat tepat ${count} soal. HARUS tepat ${count}, jangan kurang.
 
 FORMAT OUTPUT:
-Kembalikan hanya objek JSON yang valid. Boleh menggunakan markdown triple-backtick json untuk membungkus JSON.
+Kembalikan hanya objek JSON yang valid. Dilarang menggunakan markdown, backtick, atau teks lain di luar JSON.
 
 Struktur JSON yang harus dikembalikan:
 {
@@ -299,15 +299,15 @@ async function callModelOnce(
   }
 
   // ponytail: keep under 1600 so free-tier models (cap ~2048) finish with "stop" not "length"
-  const maxTokens = Math.min(1600, Math.max(400, chunkCount * 300));
-  const buffer = Math.ceil(maxTokens * 0.15);
-  const budget = maxTokens + Math.min(buffer, 200);
+  const maxTokens = Math.min(10000, Math.max(2000, chunkCount * 500));
+  const budget = maxTokens + Math.min(Math.ceil(maxTokens * 0.2), 3000);
 
   const completion = await openai.chat.completions.create(
     {
       model: modelName,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
+      response_format: { type: "json_object" },
       max_tokens: budget,
     },
     { signal },
@@ -615,15 +615,15 @@ async function chunkCascade(
       const prompt = buildPrompt(topic, chunkCount, gradeLevel, bloomLabel, err);
       const fullPrompt = prompt + `\n\nCATATAN: Ini adalah bagian ${chunkIndex}/${totalChunks} dari total soal. Buat tepat ${chunkCount} soal bagian ini.`;
 
-      const maxTokens = Math.min(1600, Math.max(400, chunkCount * 300));
-      const buffer = Math.ceil(maxTokens * 0.15);
-      const budget = maxTokens + Math.min(buffer, 200);
+      const maxTokens = Math.min(10000, Math.max(2000, chunkCount * 500));
+      const budget = maxTokens + Math.min(Math.ceil(maxTokens * 0.2), 3000);
 
       const completion = await openai.chat.completions.create(
         {
           model: modelName,
           messages: [{ role: "user", content: fullPrompt }],
           temperature: 0.7,
+          response_format: { type: "json_object" },
           max_tokens: budget,
         },
         { signal: controller.signal },
