@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# agents/planning files — local context only, not project code
+.agents/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
