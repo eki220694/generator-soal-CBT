@@ -9,6 +9,7 @@ export default function GeneratePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [gradeLevel, setGradeLevel] = useState("SD");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function GeneratePage() {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, count: Number(count), bloomLevel }),
+        body: JSON.stringify({ topic, count: Number(count), bloomLevel, gradeLevel }),
       });
 
       if (!response.ok) {
@@ -590,14 +591,11 @@ export default function GeneratePage() {
               <div>
                 <label>Kelas / Jenjang</label>
                 <div className="select-wrap">
-                  <select disabled={loading} defaultValue="">
-                    <option value="" disabled>
-                      Pilih jenjang
-                    </option>
-                    <option>SD / MI</option>
-                    <option>SMP / MTs</option>
-                    <option>SMA / MA / SMK</option>
-                    <option>Perguruan Tinggi</option>
+                  <select disabled={loading} value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)}>
+                    <option value="SD">SD / MI</option>
+                    <option value="SMP">SMP / MTs</option>
+                    <option value="SMA">SMA / MA / SMK</option>
+                    <option value="PT">Perguruan Tinggi</option>
                   </select>
                   <div className="select-arrow">
                     <svg
