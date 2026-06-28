@@ -314,6 +314,10 @@ async function callModelOnce(
   );
 
   const contentResult = completion.choices[0]?.message?.content;
+  const finishReason = completion.choices[0]?.finish_reason;
+  if (finishReason === "length") {
+    throw new Error(`Model ${modelName}: respons terpotong (finish_reason=length). Coba model dengan output lebih besar.`);
+  }
   if (!contentResult || contentResult.trim().length === 0) {
     throw new Error("Model mengembalikan respons teks kosong.");
   }
