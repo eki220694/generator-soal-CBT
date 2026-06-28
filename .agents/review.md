@@ -214,3 +214,47 @@
 - [x] Siap di-commit
 
 ## Selesai. Semua TASK dari PRD ✅
+
+---
+
+## CHANGELOG — Perbaikan Setelah TASK Selesai
+
+**Tanggal:** 2026-06-29
+**Fokus:** Soal terpotong + input count stacking
+
+### 🔥 Soal Terpotong — Root Cause & Fix (3 iterasi)
+
+**Iterasi 1 — Token budget ✗**
+- Fix: chunkSize 30→20, token 350→500 + 10% buffer
+- Hasil: masih potong (2/5 soal)
+- Sebab: bukan token kita, tapi free model internal cap
+
+**Iterasi 2 — finish_reason + response_format ✗**
+- Fix: cek `finish_reason=length` cascade ke model berikutnya
+- Naikin budget 1600 (under free-tier 2048 cap)
+- Hasil: masih potong semua
+- Sebab: `response_format: json_object` bikin model korslet (free OpenRouter ga support proper)
+
+**Iterasi 3 — Ganti model gratis 👍**
+- Fix: Hapus `response_format` dari kedua API call
+- Prompt diizinkan markdown fences (parser handle)
+- Ganti model cascade:
+  - Lama: `owl-alpha`, `glm-4.5-air`, `gpt-oss-120b`, `openrouter/auto`
+  - Baru: `google/gemma-4-31b-it:free`, `openai/gpt-oss-120b:free`, `nvidia/nemotron-3-ultra-550b-a55b:free`, `openrouter/auto`
+- ChunkSize 10, single threshold 15, max_tokens 6000 + 30% buffer
+- Hasil: ✅ model baru output besar, soal utuh
+
+**Kesimpulan:** Masalah utama = free model OpenRouter (owl-alpha/GLM) punya internal output cap sangat rendah (<1024 token). `response_format: json_object` memperparah. Solusi = pake model gratis yang outputnya besar (Gemma-4, GPT-OSS-120b, Nemotron).
+
+### 🔧 Input Jumlah Soal Stacking
+- **Masalah:** Hapus input → clamp jadi 1 → user ketik 20 → 120
+- **Fix:** `onChange` terima raw input (tanpa clamp), `onBlur` clamp 1-100
+- **Fix:** `value={count || ""}` — ga render "0" pas kosong
+
+### 📁 File Berubah
+- `app/api/generate/route.ts` — model cascade, token budget, hapus response_format
+- `app/page.tsx` — input handler fix
+
+### 🔧 Masih Open
+- Model gratis output besar tapi **latensi lebih lambat** dari owl-alpha
+- Cascade model bayar ketika free gagal — belum diimplementasi
