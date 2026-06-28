@@ -584,7 +584,10 @@ export default function GeneratePage() {
                   disabled={loading}
                   value={count}
                   onChange={(e) =>
-                    setCount(Math.max(1, parseInt(e.target.value) || 0))
+                    setCount(e.target.value === "" ? 0 : parseInt(e.target.value) || 0)
+                  }
+                  onBlur={() =>
+                    setCount((c) => Math.max(1, Math.min(100, c)))
                   }
                 />
               </div>
