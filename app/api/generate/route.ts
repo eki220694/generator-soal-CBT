@@ -297,10 +297,10 @@ async function callModelOnce(
     prompt = buildPrompt(topic, chunkCount, gradeLevel, bloomLabel, lastError);
   }
 
-  // ponytail: fixed cap keeps free-tier models happy; raise when switching to paid
-  const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 500));
-  const buffer = Math.ceil(maxTokens * 0.1);
-  const budget = maxTokens + Math.min(buffer, 2000);
+  // ponytail: keep under 1600 so free-tier models (cap ~2048) finish with "stop" not "length"
+  const maxTokens = Math.min(1600, Math.max(400, chunkCount * 300));
+  const buffer = Math.ceil(maxTokens * 0.15);
+  const budget = maxTokens + Math.min(buffer, 200);
 
   const completion = await openai.chat.completions.create(
     {
@@ -615,9 +615,9 @@ async function chunkCascade(
       const prompt = buildPrompt(topic, chunkCount, gradeLevel, bloomLabel, err);
       const fullPrompt = prompt + `\n\nCATATAN: Ini adalah bagian ${chunkIndex}/${totalChunks} dari total soal. Buat tepat ${chunkCount} soal bagian ini.`;
 
-      const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 500));
-      const buffer = Math.ceil(maxTokens * 0.1);
-      const budget = maxTokens + Math.min(buffer, 2000);
+      const maxTokens = Math.min(1600, Math.max(400, chunkCount * 300));
+      const buffer = Math.ceil(maxTokens * 0.15);
+      const budget = maxTokens + Math.min(buffer, 200);
 
       const completion = await openai.chat.completions.create(
         {
