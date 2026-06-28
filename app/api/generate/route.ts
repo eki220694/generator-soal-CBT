@@ -260,8 +260,8 @@ function stringSimilarity(a: string, b: string): number {
   return (2 * intersectionSize) / (s1.length - 1 + s2.length - 1);
 }
 
-/** Split total count into chunks of max chunkSize (default 30). */
-function splitCount(total: number, chunkSize = 30): number[] {
+/** Split total count into chunks of max chunkSize (default 20). */
+function splitCount(total: number, chunkSize = 20): number[] {
   const chunks: number[] = [];
   let remaining = total;
   while (remaining > 0) {
@@ -298,7 +298,9 @@ async function callModelOnce(
   }
 
   // ponytail: fixed cap keeps free-tier models happy; raise when switching to paid
-  const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 350));
+  const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 500));
+  const buffer = Math.ceil(maxTokens * 0.1);
+  const budget = maxTokens + Math.min(buffer, 2000);
 
   const completion = await openai.chat.completions.create(
     {
@@ -306,7 +308,7 @@ async function callModelOnce(
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7,
       response_format: { type: "json_object" },
-      max_tokens: maxTokens,
+      max_tokens: budget,
     },
     { signal },
   );
@@ -609,7 +611,9 @@ async function chunkCascade(
       const prompt = buildPrompt(topic, chunkCount, gradeLevel, bloomLabel, err);
       const fullPrompt = prompt + `\n\nCATATAN: Ini adalah bagian ${chunkIndex}/${totalChunks} dari total soal. Buat tepat ${chunkCount} soal bagian ini.`;
 
-      const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 350));
+      const maxTokens = Math.min(12000, Math.max(2000, chunkCount * 500));
+      const buffer = Math.ceil(maxTokens * 0.1);
+      const budget = maxTokens + Math.min(buffer, 2000);
 
       const completion = await openai.chat.completions.create(
         {
@@ -617,7 +621,7 @@ async function chunkCascade(
           messages: [{ role: "user", content: fullPrompt }],
           temperature: 0.7,
           response_format: { type: "json_object" },
-          max_tokens: maxTokens,
+          max_tokens: budget,
         },
         { signal: controller.signal },
       );
