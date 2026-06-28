@@ -90,6 +90,7 @@ Harap perhatikan kesalahan di atas dan jangan ulangi.
 ` : ""}
 
 ATURAN WAJIB:
+- Soal singkat dan padat. Narasi tidak perlu panjang-panjang. Soal langsung ke inti.
 - Seluruh soal dan semua pilihan jawaban HARUS menggunakan Bahasa Indonesia. Dilarang menggunakan bahasa Inggris.
 - Setiap soal harus sesuai dengan tingkat kognitif Bloom yang diminta.
 - Hanya ada SATU jawaban yang benar untuk setiap soal.
