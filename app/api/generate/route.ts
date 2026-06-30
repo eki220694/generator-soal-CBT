@@ -34,6 +34,18 @@ interface RawQuestion {
 const BOCOR_THRESHOLD = 0.75;
 const DISTRACTOR_SIMILARITY_THRESHOLD = 0.9;
 
+// Rate limiter in-memory — sliding window per IP
+const RL_WINDOW = 60_000; // 1 menit
+const RL_MAX = 10; // 10 request per menit (50 guru ÷ 5 menit = cukup)
+const rlMap = new Map<string, { n: number; t: number }>();
+function rateLimit(ip: string): { ok: boolean; wait: number } {
+  const now = Date.now();
+  const e = rlMap.get(ip);
+  if (!e || now - e.t > RL_WINDOW) { rlMap.set(ip, { n: 1, t: now }); return { ok: true, wait: 0 }; }
+  if (e.n >= RL_MAX) return { ok: false, wait: Math.ceil((RL_WINDOW - (now - e.t)) / 1000) };
+  e.n++; return { ok: true, wait: 0 };
+}
+
 // model yg pasti kerja hari ini (free opensource)
 const OR_MODELS = ["openrouter/owl-alpha", "nvidia/nemotron-3-ultra-550b-a55b:free"];
 
@@ -168,6 +180,11 @@ export async function POST(request: NextRequest) {
     if (!Number.isInteger(count) || count < 1 || count > 100) return NextResponse.json({ error: "Jumlah 1-100" }, { status: 400 });
     if (!["SD", "SMP", "SMA", "PT"].includes(gradeLevel ?? "")) return NextResponse.json({ error: "Jenjang: SD/SMP/SMA/PT" }, { status: 400 });
     if (!["C1", "C2", "C3", "C4", "C5", "C6"].includes(bloomLevel ?? "")) return NextResponse.json({ error: "Bloom C1-C6" }, { status: 400 });
+
+    // Rate limit by IP — 10 req/min/guru
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const rl = rateLimit(ip);
+    if (!rl.ok) return NextResponse.json({ error: `Terlalu banyak permintaan. Coba ${rl.wait} detik lagi.`, retryAfter: rl.wait }, { status: 429, headers: { "Retry-After": String(rl.wait) } });
 
     const bloomLabel = BLOOM_LABELS[bloomLevel] ?? bloomLevel;
     console.log(`[Generate] ${count} soal ${gradeLevel} ${bloomLabel}`);
